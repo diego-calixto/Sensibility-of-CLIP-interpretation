@@ -117,7 +117,7 @@ def generate_hm(hm_type, img, gt, pred, resize):
 
 if __name__ == '__main__':
     data_path = "./data/imagenet/val/"
-    # ins_path = './data/imagenet/ins_samples/'  ### for debug, saving insertion samples
+    ins_path = './data/imagenet/ins_samples/'  ### for debug, saving insertion samples
 
     # hm_types = ['eclip-wo-ksim_gt', 'eclip-wo-ksim_pred', 'eclip_gt', 'eclip_pred', 'game_gt', 'game_pred',
     #         'gradcam_gt', 'gradcam_pred', 'maskclip_gt', 'maskclip_pred', 'selfattn', 'surgery_gt', 'surgery_pred', 'm2ib_gt', 'm2ib_pred']
@@ -151,8 +151,8 @@ if __name__ == '__main__':
             # files = os.listdir(data_path+folder)
             print("Start: Processing the {}th folder, target class name: {}".format(label, IMAGENET_CLASSNAMES[label]))
 
-            # if not os.path.exists(ins_path+folder):
-            #     os.makedirs(ins_path+folder)
+            if not os.path.exists(ins_path+folder):
+                os.makedirs(ins_path+folder)
 
             files = os.listdir(data_path+folder)
 
