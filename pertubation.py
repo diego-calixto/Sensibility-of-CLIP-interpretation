@@ -25,9 +25,9 @@ def perturb (img_input, txt_input):
 
     # pertubation calculation
     alpha = 0.01
-    perturbation = alpha * image.grad # .sign() # porque não usar sign?
+    perturbation = alpha * image.grad.sign()
     perturbed_image = image + perturbation
-    #perturbed_image = torch.clamp(perturbed_image, 0, 1) 
+    perturbed_image = torch.clamp(perturbed_image, 0, 1).detach()
 
     return perturbed_image
 
