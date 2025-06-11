@@ -138,7 +138,7 @@ def mm_interpret(image, texts, model, device, start_layer=-1, start_layer_text=-
     one_hot = np.zeros((logits_per_image.shape[0], logits_per_image.shape[1]), dtype=np.float32)
     one_hot[torch.arange(logits_per_image.shape[0]), index] = 1
     one_hot = torch.from_numpy(one_hot).requires_grad_(True)
-    one_hot = torch.sum(one_hot.cuda() * logits_per_image)
+    one_hot = torch.sum(one_hot.cpu() * logits_per_image)
     model.zero_grad()
 
     if flag == "image":

@@ -79,6 +79,8 @@ def generate_hm(hm_type, img, txt_embedding, txts, resize):
     elif "m2ib" in hm_type:
         start = time.time()
         img_clipreprocess = preprocess(img).to(device).unsqueeze(0)
+        if isinstance(txts, str):
+            txts = [txts]
         emap = m2ib_clip_map(model=m2ib_model, image=img_clipreprocess, texts=txts, device=device)
         emap = torch.tensor(emap)
     elif "rise" in hm_type:
@@ -102,7 +104,6 @@ def visualize(hmap, raw_image, resize):
     color = cv2.cvtColor(color, cv2.COLOR_BGR2RGB)
     c_ret = np.clip(image * (1 - 0.5) + color * 0.5, 0, 255).astype(np.uint8)
     return c_ret
-
 
 
 
@@ -131,6 +132,36 @@ def simple_hm(hm_type, img, txt, print=False):
         plt.show()
     
     return hm
+
+def simple_similarity(img, txt):
+    img_preprocessed = preprocess(img).unsqueeze(0)
+    text_processed = clip.tokenize(txt).cpu()
+    
+    text_embedding = clipmodel.encode_text(text_processed)
+    text_embedding = F.normalize(text_embedding, dim=-1)
+
+    ori_img_embedding = clipmodel.encode_image(img_preprocessed)
+    ori_img_embedding = F.normalize(ori_img_embedding, dim=-1)
+    
+    return(ori_img_embedding @ text_embedding.T).item()
+
+def to_prompt(label):
+
+    labels_map = {
+        0: 'truck',
+        1: 'car',
+        2: 'plane',
+        3: 'ship',
+        4: 'cat',
+        5: 'dog',
+        6: 'equine',
+        7: 'deer',
+        8: 'frog',
+        9: 'bird',
+    }
+
+    return f"a photo of a {labels_map[label]}"
+
 
 
 # hm_types = ['eclip-wo-ksim_gt', 'eclip-wo-ksim_pred', 'eclip_gt', 'eclip_pred', 'game_gt', 'game_pred',

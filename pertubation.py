@@ -1,6 +1,7 @@
 import torch
 import clip
 import torch.nn.functional as F
+from torchvision.transforms import ToPILImage
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model, preprocess = clip.load("ViT-B/16", device=device)
@@ -24,12 +25,15 @@ def perturb (img_input, txt_input):
     cosine.backward()
 
     # pertubation calculation
-    alpha = 0.01
+    alpha = 8/255
     perturbation = alpha * image.grad.sign()
     perturbed_image = image + perturbation
     perturbed_image = torch.clamp(perturbed_image, 0, 1).detach()
 
-    return perturbed_image
+    to_pil = ToPILImage()
+    perturbed_image_pil = to_pil(perturbed_image.squeeze())
+
+    return perturbed_image_pil
 
 
 
