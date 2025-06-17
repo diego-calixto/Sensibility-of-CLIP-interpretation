@@ -8,6 +8,7 @@ import cv2
 import clip
 from torchvision.transforms import Resize
 import matplotlib.pyplot as plt
+from pertubation import perturb
 
 from generate_emap import clipmodel, preprocess, imgprocess_keepsize, mm_clipmodel, mm_interpret, \
         clip_encode_dense, grad_eclip, grad_cam, mask_clip, compute_rollout_attention, \
@@ -37,9 +38,9 @@ def pre_caption(caption, max_words=50):
             
     return caption
     
-def generate_hm(hm_type, img, txt_embedding, txts, resize):
+def generate_hm(hm_type, img, txt_embedding, txts, resize, img_keepsized):
     start = time.time()
-    img_keepsized = imgprocess_keepsize(img).to(device).unsqueeze(0)
+    emap = 0
     outputs, v_final, last_input, v, q_out, k_out,\
         attn, att_output, map_size = clip_encode_dense(img_keepsized)
     img_embedding = F.normalize(outputs[:,0], dim=-1)
@@ -60,34 +61,36 @@ def generate_hm(hm_type, img, txt_embedding, txts, resize):
         emap = torch.stack(emap, dim=0).sum(0)  
     elif "game" in hm_type:
         start = time.time()
-        img_clipreprocess = preprocess(img).to(device).unsqueeze(0)
+        #img_clipreprocess = preprocess(img).to(device).unsqueeze(0)
         text_tokenized = mm_clip.tokenize(txts).to(device)
-        emap = mm_interpret(model=mm_clipmodel, image=img_clipreprocess, texts=text_tokenized, device=device)    
+        emap = mm_interpret(model=mm_clipmodel, image=img, texts=text_tokenized, device=device)    
         emap = emap.sum(0) 
     elif "rollout" in hm_type:
         start = time.time()
-        img_clipreprocess = preprocess(img).to(device).unsqueeze(0)
+        #img_clipreprocess = preprocess(img).to(device).unsqueeze(0)
         text_tokenized = mm_clip.tokenize(txts).to(device)
-        attentions = mm_interpret(model=mm_clipmodel, image=img_clipreprocess, texts=text_tokenized, device=device, rollout=True)      
+        attentions = mm_interpret(model=mm_clipmodel, image=img, texts=text_tokenized, device=device, rollout=True)      
         emap = compute_rollout_attention(attentions)[0]
     elif "surgery" in hm_type:
         start = time.time()
-        img_clipreprocess = preprocess(img).to(device).unsqueeze(0)
+        #img_clipreprocess = preprocess(img).to(device).unsqueeze(0)
         all_texts = ['airplane', 'bag', 'bed', 'bedclothes', 'bench', 'bicycle', 'bird', 'boat', 'book', 'bottle', 'building', 'bus', 'cabinet', 'car', 'cat', 'ceiling', 'chair', 'cloth', 'computer', 'cow', 'cup', 'curtain', 'dog', 'door', 'fence', 'floor', 'flower', 'food', 'grass', 'ground', 'horse', 'keyboard', 'light', 'motorbike', 'mountain', 'mouse', 'person', 'plate', 'platform', 'potted plant', 'road', 'rock', 'sheep', 'shelves', 'sidewalk', 'sign', 'sky', 'snow', 'sofa', 'table', 'track', 'train', 'tree', 'truck', 'tv monitor', 'wall', 'water', 'window', 'wood']
         all_texts = txts + all_texts
-        emap = clip_surgery_map(model=surgery_model, image=img_clipreprocess, texts=all_texts, device=device)[0,:,:,0]
+        emap = clip_surgery_map(model=surgery_model, image=img, texts=all_texts, device=device)[0,:,:,0]
     elif "m2ib" in hm_type:
         start = time.time()
-        img_clipreprocess = preprocess(img).to(device).unsqueeze(0)
+        #img_clipreprocess = preprocess(img).to(device).unsqueeze(0)
         if isinstance(txts, str):
             txts = [txts]
-        emap = m2ib_clip_map(model=m2ib_model, image=img_clipreprocess, texts=txts, device=device)
+        emap = m2ib_clip_map(model=m2ib_model, image=img, texts=txts, device=device)
         emap = torch.tensor(emap)
     elif "rise" in hm_type:
         start = time.time()
-        img_clipreprocess = preprocess(img).unsqueeze(0)
-        emap = rise(model=clipmodel, image=img_clipreprocess, txt_embedding=txt_embedding, device=device)
+        #img_clipreprocess = preprocess(img).unsqueeze(0)
+        emap = rise(model=clipmodel, image=img, txt_embedding=txt_embedding, device=device)
         print(emap.shape)
+    else:
+        raise ValueError(f"[generate_hm] hm_type '{hm_type}' not recognized")
     end = time.time()
     
     print("processing time: ", end-start)
@@ -107,7 +110,7 @@ def visualize(hmap, raw_image, resize):
 
 
 
-def simple_hm(hm_type, img, txt, print=False):
+def simple_hm(hm_type, img, txt, resize, img_keepsize, print=False):
     """
     ## hm_types
 
@@ -118,12 +121,8 @@ def simple_hm(hm_type, img, txt, print=False):
     text_processed = clip.tokenize(txt).cpu()
     text_embedding = clipmodel.encode_text(text_processed)
     text_embedding = F.normalize(text_embedding, dim=-1)
-
-    w, h = img.size
-    resize = Resize((h,w))
-
     
-    hm = generate_hm(hm_type, img, text_embedding, [txt], resize)
+    hm = generate_hm(hm_type, img, text_embedding, [txt], resize, img_keepsize)
 
     if(print):
         c_ret = visualize(hm, img.copy(), resize)
@@ -134,13 +133,13 @@ def simple_hm(hm_type, img, txt, print=False):
     return hm
 
 def simple_similarity(img, txt):
-    img_preprocessed = preprocess(img).unsqueeze(0)
+
     text_processed = clip.tokenize(txt).cpu()
     
     text_embedding = clipmodel.encode_text(text_processed)
     text_embedding = F.normalize(text_embedding, dim=-1)
 
-    ori_img_embedding = clipmodel.encode_image(img_preprocessed)
+    ori_img_embedding = clipmodel.encode_image(img)
     ori_img_embedding = F.normalize(ori_img_embedding, dim=-1)
     
     return(ori_img_embedding @ text_embedding.T).item()
@@ -162,10 +161,20 @@ def to_prompt(label):
 
     return f"a photo of a {labels_map[label]}"
 
+def analysis_pertub(img, label, int_method):
+    img_processed = preprocess(img).unsqueeze(0)
 
+    img_keepsize = imgprocess_keepsize(img).to(device).unsqueeze(0)
 
-# hm_types = ['eclip-wo-ksim_gt', 'eclip-wo-ksim_pred', 'eclip_gt', 'eclip_pred', 'game_gt', 'game_pred',
-#         'gradcam_gt', 'gradcam_pred', 'maskclip_gt', 'maskclip_pred', 'selfattn', 'surgery_gt', 'surgery_pred', 'm2ib_gt', 'm2ib_pred']
+    w, h = img.size
+    resize = Resize((h,w))
 
-#def generate_hm(hm_type, img, txt_embedding, txts, resize):
+    similarity_original = simple_similarity(img_processed, label)
+    hm_original = simple_hm(int_method, img_processed, label, resize, img_keepsize)
 
+    img_perturbed = perturb(img_processed, label)
+
+    similarity_perturbed = simple_similarity(img_perturbed, label)
+    hm_perturbed = simple_hm(int_method, img_perturbed, label, resize, img_keepsize)
+
+    return similarity_original, similarity_perturbed, hm_original, hm_perturbed

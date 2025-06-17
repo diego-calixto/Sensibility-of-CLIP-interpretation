@@ -3,13 +3,10 @@ import os
 import pandas as pd
 import os
 from PIL import Image
+import torch
 from torch.utils.data import Dataset
-import sys
-
-sys.path.append("E:\projetos\Grad-Eclip")
-
 import utils
-from analysis import analysis_pertub
+device = "cuda" if torch.cuda.is_available() else "cpu"
             
 
 class Rival10Challenge(Dataset):
@@ -107,7 +104,7 @@ if __name__ == "__main__":
 
 
     # int_method = ["selfattn", "gradcam", "maskclip", "eclip", "game", "rollout", "surgery", "m2ib", "rise"]
-    int_method =  ["selfattn", "gradcam", "maskclip", "eclip", "game", "rollout", "rise"]
+    int_method_list =  ["selfattn", "gradcam", "maskclip", "eclip", "game", "rollout", "rise"]
 
     log = {
         'img_id': [],
@@ -123,20 +120,16 @@ if __name__ == "__main__":
     for idx in range(10):
         image, label = data[idx]
         print(label)
-        for int_method in int_method:
-            similarity_original, similarity_perturbed, hm_original, hm_perturbed = analysis_pertub(image, utils.to_prompt(label), int_method)
-            print(similarity_original)
-            log['img_id'].append(f"{idx}")
+        for int_method in int_method_list:
+            similarity_original, similarity_perturbed, hm_original, hm_perturbed = utils.analysis_pertub(image, utils.to_prompt(label), int_method)
+            log['img_id'].append(idx)
             log['interpretability_method'].append(int_method)
             log['label'].append(label)
             log['similarity_original'].append(similarity_original)
             log['similarity_perturb'].append(similarity_perturbed)
-            log['hm_original'].append(hm_original) 
-            log['hm_perturbed'].append(hm_perturbed)
+            log['hm_original'].append(hm_original.detach().to(device))
+            log['hm_perturbed'].append(hm_perturbed.detach().to(device))
             log['alpha'].append(8/255)
             log['clip_model'].append("ViT-B/16")
-            print(log)
-
+            print(int_method)
     pd.DataFrame.from_dict(log).to_pickle("E:\projetos\Grad-Eclip\\results")
-
-

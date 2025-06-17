@@ -9,11 +9,11 @@ model, preprocess = clip.load("ViT-B/16", device=device)
 def perturb (img_input, txt_input):
 
     # clip inference process
-    image = preprocess(img_input).unsqueeze(0).to(device)
-    image.requires_grad = True 
+    #image = preprocess(img_input).to(device).unsqueeze(0)
+    img_input.requires_grad = True 
     text = clip.tokenize(txt_input).to(device)
 
-    image_features = model.encode_image(image)
+    image_features = model.encode_image(img_input)
     image_features = F.normalize(image_features, dim=-1)
 
     text_features = model.encode_text(text)
@@ -26,14 +26,11 @@ def perturb (img_input, txt_input):
 
     # pertubation calculation
     alpha = 8/255
-    perturbation = alpha * image.grad.sign()
-    perturbed_image = image + perturbation
+    perturbation = alpha * img_input.grad.sign()
+    perturbed_image = img_input + perturbation
     perturbed_image = torch.clamp(perturbed_image, 0, 1).detach()
 
-    to_pil = ToPILImage()
-    perturbed_image_pil = to_pil(perturbed_image.squeeze())
-
-    return perturbed_image_pil
+    return perturbed_image
 
 
 
