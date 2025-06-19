@@ -3,7 +3,7 @@ import clip
 import torch.nn.functional as F
 from torchvision.transforms import ToPILImage
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = "cuda:0" if torch.cuda.is_available() else "cpu"
 model, preprocess = clip.load("ViT-B/16", device=device)
 
 def perturb (img_input, txt_input):

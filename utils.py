@@ -15,7 +15,7 @@ from generate_emap import clipmodel, preprocess, imgprocess_keepsize, mm_clipmod
         surgery_model, clip_surgery_map, m2ib_model, m2ib_clip_map, rise
 
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 def pre_caption(caption, max_words=50):
     caption = re.sub(
@@ -102,7 +102,7 @@ def generate_hm(hm_type, img, txt_embedding, txts, resize, img_keepsized):
 
 def visualize(hmap, raw_image, resize):
     image = np.asarray(raw_image.copy())
-    hmap = resize(hmap.unsqueeze(0))[0].cpu().numpy()
+    hmap = resize(hmap.unsqueeze(0))[0].to(device).numpy()
     color = cv2.applyColorMap((hmap*255).astype(np.uint8), cv2.COLORMAP_JET) # cv2 to plt
     color = cv2.cvtColor(color, cv2.COLOR_BGR2RGB)
     c_ret = np.clip(image * (1 - 0.5) + color * 0.5, 0, 255).astype(np.uint8)
@@ -118,7 +118,7 @@ def simple_hm(hm_type, img, txt, resize, img_keepsize, print=False):
     'gradcam_gt', 'gradcam_pred', 'maskclip_gt', 'maskclip_pred', 'selfattn', 'surgery_gt', 'surgery_pred', 'm2ib_gt', 'm2ib_pred']
     """
 
-    text_processed = clip.tokenize(txt).cpu()
+    text_processed = clip.tokenize(txt).to(device)
     text_embedding = clipmodel.encode_text(text_processed)
     text_embedding = F.normalize(text_embedding, dim=-1)
     
@@ -134,7 +134,7 @@ def simple_hm(hm_type, img, txt, resize, img_keepsize, print=False):
 
 def simple_similarity(img, txt):
 
-    text_processed = clip.tokenize(txt).cpu()
+    text_processed = clip.tokenize(txt).to(device)
     
     text_embedding = clipmodel.encode_text(text_processed)
     text_embedding = F.normalize(text_embedding, dim=-1)

@@ -37,7 +37,7 @@ def imgprocess_keepsize(img, patch_size=[16, 16], scale_factor=1):
 
 
 # CLIP
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = "cuda:0" if torch.cuda.is_available() else "cpu"
 clipmodel, preprocess = clip.load("ViT-B/16", device=device)
 mm_clipmodel, _ = mm_clip.load("ViT-B/16", device=device, jit=False)
 surgery_model, _ = surgery_clip.load("CS-ViT-B/16", device=device)
@@ -56,7 +56,7 @@ def accuracy(output, target, topk=(1,)):
     pred = output.topk(max(topk), 1, True, True)[1].t()
     # print("pred:", pred.shape) # [5,1]
     correct = pred.eq(target.view(1, -1).expand_as(pred))
-    acc = [float(correct[:k].reshape(-1).float().sum(0, keepdim=True).cpu().numpy()) for k in topk]
+    acc = [float(correct[:k].reshape(-1).float().sum(0, keepdim=True).to(device).numpy()) for k in topk]
     pred_top1 = pred[0,:]
     return acc, pred_top1
 
@@ -92,7 +92,7 @@ def rise(model, image, txt_embedding, device, N=2000, s=8, p1=0.5):
         for i in tqdm(range(0, N, batch_size), desc='Explaining'):
             image_features = model.encode_image(masked[i:min(i+batch_size, N)].to(device))
             image_features = F.normalize(image_features, dim=-1)
-            preds.append((image_features @ txt_embedding.T).cpu())
+            preds.append((image_features @ txt_embedding.T).to(device))
             del image_features
     preds = torch.cat(preds, dim=0)
     sal = (preds * masks.reshape(N, -1)).sum(0).reshape(*input_size)
@@ -133,12 +133,12 @@ def mm_interpret(image, texts, model, device, start_layer=-1, start_layer_text=-
     batch_size = texts.shape[0]
     images = image.repeat(batch_size, 1, 1, 1)
     logits_per_image, logits_per_text = model(images, texts)
-    probs = logits_per_image.softmax(dim=-1).detach().cpu().numpy()
+    probs = logits_per_image.softmax(dim=-1).detach().to(device).numpy()
     index = [i for i in range(batch_size)]
     one_hot = np.zeros((logits_per_image.shape[0], logits_per_image.shape[1]), dtype=np.float32)
     one_hot[torch.arange(logits_per_image.shape[0]), index] = 1
     one_hot = torch.from_numpy(one_hot).requires_grad_(True)
-    one_hot = torch.sum(one_hot.cpu() * logits_per_image)
+    one_hot = torch.sum(one_hot.to(device) * logits_per_image)
     model.zero_grad()
 
     if flag == "image":
@@ -435,7 +435,7 @@ def mask_clip(txt_feats, v_final, k_out, map_size):
 def save_map(image, emap, resize, path, tag):
     emap -= emap.min()
     emap /= emap.max()
-    emap = resize(emap.unsqueeze(0))[0].cpu().numpy()
+    emap = resize(emap.unsqueeze(0))[0].to(device).numpy()
     color = cv2.applyColorMap((emap*255).astype(np.uint8), cv2.COLORMAP_JET) # cv2 to plt
     color = cv2.cvtColor(color, cv2.COLOR_BGR2RGB)
     c_ret = np.clip(image * (1 - 0.5) + color * 0.5, 0, 255).astype(np.uint8)
@@ -444,7 +444,7 @@ def save_map(image, emap, resize, path, tag):
 
 
 if __name__ == '__main__':
-    from clip_utils import build_zero_shot_classifier
+    from old.clip_utils import build_zero_shot_classifier
     from imagenet_metadata import IMAGENET_CLASSNAMES, OPENAI_IMAGENET_TEMPLATES
     data_path = "../imagenet-1k/val/"
     save_path = "../grad_eclip/imagenet-1k/"

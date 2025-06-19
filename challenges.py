@@ -6,7 +6,7 @@ from PIL import Image
 import torch
 from torch.utils.data import Dataset
 import utils
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = "cuda:0" if torch.cuda.is_available() else "cpu"
             
 
 class Rival10Challenge(Dataset):
@@ -132,4 +132,4 @@ if __name__ == "__main__":
             log['alpha'].append(8/255)
             log['clip_model'].append("ViT-B/16")
             print(int_method)
-    pd.DataFrame.from_dict(log).to_pickle("E:\projetos\Grad-Eclip\\results")
+    pd.DataFrame.from_dict(log).to_pickle("E:\projetos\Grad-Eclip\\results")    
