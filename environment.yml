@@ -5,11 +5,10 @@ channels:
 dependencies:
   - python=3.8
   - pytorch==2.3.0
-  - cpuonly
   - torchvision
   - transformers
   - opencv
   - ipykernel
   - ipywidgets
   - seaborn
-prefix: usrs/home/username/miniconda3/envs/main
+prefix: /home/dhvc/miniconda3/envs/main
