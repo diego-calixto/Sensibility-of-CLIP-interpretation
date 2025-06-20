@@ -251,7 +251,8 @@ def clip_encode_dense(x):
     clip_ksize = clipmodel.visual.conv1.kernel_size
     
     # modified from CLIP
-    #x = x.half()
+    x = x.to(dtype=clipmodel.visual.conv1.weight.dtype)
+    
     x = clipmodel.visual.conv1(x)  
     feah, feaw = x.shape[-2:]
 
