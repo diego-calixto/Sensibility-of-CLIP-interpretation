@@ -56,7 +56,7 @@ def accuracy(output, target, topk=(1,)):
     pred = output.topk(max(topk), 1, True, True)[1].t()
     # print("pred:", pred.shape) # [5,1]
     correct = pred.eq(target.view(1, -1).expand_as(pred))
-    acc = [float(correct[:k].reshape(-1).float().sum(0, keepdim=True).to(device).numpy()) for k in topk]
+    acc = [float(correct[:k].reshape(-1).float().sum(0, keepdim=True).cpu().numpy()) for k in topk]
     pred_top1 = pred[0,:]
     return acc, pred_top1
 
@@ -133,7 +133,7 @@ def mm_interpret(image, texts, model, device, start_layer=-1, start_layer_text=-
     batch_size = texts.shape[0]
     images = image.repeat(batch_size, 1, 1, 1)
     logits_per_image, logits_per_text = model(images, texts)
-    probs = logits_per_image.softmax(dim=-1).detach().to(device).numpy()
+    probs = logits_per_image.softmax(dim=-1).detach().cpu().numpy()
     index = [i for i in range(batch_size)]
     one_hot = np.zeros((logits_per_image.shape[0], logits_per_image.shape[1]), dtype=np.float32)
     one_hot[torch.arange(logits_per_image.shape[0]), index] = 1
@@ -436,7 +436,7 @@ def mask_clip(txt_feats, v_final, k_out, map_size):
 def save_map(image, emap, resize, path, tag):
     emap -= emap.min()
     emap /= emap.max()
-    emap = resize(emap.unsqueeze(0))[0].to(device).numpy()
+    emap = resize(emap.unsqueeze(0))[0].cpu().numpy()
     color = cv2.applyColorMap((emap*255).astype(np.uint8), cv2.COLORMAP_JET) # cv2 to plt
     color = cv2.cvtColor(color, cv2.COLOR_BGR2RGB)
     c_ret = np.clip(image * (1 - 0.5) + color * 0.5, 0, 255).astype(np.uint8)
