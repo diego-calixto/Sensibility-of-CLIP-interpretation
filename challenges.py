@@ -104,7 +104,7 @@ if __name__ == "__main__":
 
 
     # int_method = ["selfattn", "gradcam", "maskclip", "eclip", "game", "rollout", "surgery", "m2ib", "rise"]
-    int_method_list =  ["selfattn", "gradcam", "maskclip", "eclip", "game", "rollout", "rise"]
+    int_method_list =  ["selfattn", "gradcam", "maskclip", "eclip", "game", "rollout", "surgery", "m2ib", "rise"]
 
     log = {
         'img_id': [],
@@ -127,8 +127,8 @@ if __name__ == "__main__":
             log['label'].append(label)
             log['similarity_original'].append(similarity_original)
             log['similarity_perturb'].append(similarity_perturbed)
-            log['hm_original'].append(hm_original.detach().to(device))
-            log['hm_perturbed'].append(hm_perturbed.detach().to(device))
+            log['hm_original'].append(hm_original.detach().cpu())
+            log['hm_perturbed'].append(hm_perturbed.detach().cpu())
             log['alpha'].append(8/255)
             log['clip_model'].append("ViT-B/16")
             print(int_method)
