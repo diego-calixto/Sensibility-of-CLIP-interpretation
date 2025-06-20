@@ -97,7 +97,7 @@ if __name__ == "__main__":
 
     data = Rival10Challenge(
         challenge_type="ordinary",
-        root_dir="E:\projetos\Grad-Eclip\RIVAL10-Diego",
+        root_dir="./RIVAL10-Diego",
         split="test"
     )
 
@@ -132,4 +132,4 @@ if __name__ == "__main__":
             log['alpha'].append(8/255)
             log['clip_model'].append("ViT-B/16")
             print(int_method)
-    pd.DataFrame.from_dict(log).to_pickle("E:\projetos\Grad-Eclip\\results")    
+    pd.DataFrame.from_dict(log).to_pickle("./results")    
