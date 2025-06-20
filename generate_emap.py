@@ -103,6 +103,14 @@ def rise(model, image, txt_embedding, device, N=2000, s=8, p1=0.5):
 ### M2IB
 def m2ib_clip_map(model, image, texts, device, vbeta=0.1, vvar=1, vlayer=9, tbeta=0.1, tvar=1, tlayer=9):
     text_ids = torch.tensor([clip_tokenizer.encode(texts, add_special_tokens=True)]).to(device)
+    encoded = clip_tokenizer(
+        texts,
+        padding=True,
+        truncation=True,
+        return_tensors="pt",       
+        add_special_tokens=True
+    )
+    text_ids = encoded["input_ids"].to(device)
     vmap = vision_heatmap_iba(text_ids, image, model, vlayer, vbeta, vvar)
     return vmap
 
