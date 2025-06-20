@@ -83,7 +83,7 @@ def generate_masks(input_size, N, s, p1):
 ### RISE
 def rise(model, image, txt_embedding, device, N=2000, s=8, p1=0.5):
     input_size = image.shape[-2:]
-    masks = generate_masks(input_size, N, s, p1)
+    masks = generate_masks(input_size, N, s, p1).to(device)
     batch_size = 50
     preds = []
     # Make sure multiplication is being done for correct axes
