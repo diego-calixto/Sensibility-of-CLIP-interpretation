@@ -162,9 +162,9 @@ def to_prompt(label):
     return f"a photo of a {labels_map[label]}"
 
 def analysis_pertub(img, label, int_method):
-    img_processed = preprocess(img).unsqueeze(0)
+    img_processed = preprocess(img).to(device).unsqueeze(0)
 
-    img_keepsize = imgprocess_keepsize(img).to(device).unsqueeze(0)
+    img_keepsize = imgprocess_keepsize(img).to(device).unsqueeze(0).to(torch.float32)
 
     w, h = img.size
     resize = Resize((h,w))
