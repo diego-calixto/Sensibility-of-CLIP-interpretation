@@ -7,7 +7,6 @@ from pertubation import perturb
 import sys
 import os
 import pandas as pd
-import analysis
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
