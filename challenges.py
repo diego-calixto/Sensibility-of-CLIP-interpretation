@@ -117,10 +117,11 @@ if __name__ == "__main__":
         'alpha': [],
         'clip_model': []
     }
-    for idx in range(10):
+    for idx in range(len(data)):
         image, label = data[idx]
-        print(label)
+        print("photo index: ", idx)
         for int_method in int_method_list:
+            print(int_method)
             similarity_original, similarity_perturbed, hm_original, hm_perturbed = utils.analysis_pertub(image, utils.to_prompt(label), int_method)
             log['img_id'].append(idx)
             log['interpretability_method'].append(int_method)
@@ -131,5 +132,4 @@ if __name__ == "__main__":
             log['hm_perturbed'].append(hm_perturbed.detach().cpu())
             log['alpha'].append(8/255)
             log['clip_model'].append("ViT-B/16")
-            print(int_method)
-    pd.DataFrame.from_dict(log).to_pickle("./results")    
+    pd.DataFrame.from_dict(log).to_pickle("./results")
