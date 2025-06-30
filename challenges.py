@@ -128,8 +128,17 @@ if __name__ == "__main__":
             log['label'].append(label)
             log['similarity_original'].append(similarity_original)
             log['similarity_perturb'].append(similarity_perturbed)
-            log['hm_original'].append(hm_original.detach().cpu())
-            log['hm_perturbed'].append(hm_perturbed.detach().cpu())
+            log['hm_original'].append(hm_original.detach().cpu().numpy())
+            log['hm_perturbed'].append(hm_perturbed.detach().cpu().numpy())
             log['alpha'].append(8/255)
             log['clip_model'].append("ViT-B/16")
-    pd.DataFrame.from_dict(log).to_pickle("./results")
+    try:
+        batch_size = 500
+for start in range(0, len(log['img_id']), batch_size):
+    end = start + batch_size
+    batch_log = {k: v[start:end] for k, v in log.items()}
+    df = pd.DataFrame.from_dict(batch_log)
+df.to_pickle(f"./results_batch_{start}.pkl")
+        print("Data saved successfully to './results.pkl'!")
+    except Exception as e:
+        print(f"Error saving file: {e}")
