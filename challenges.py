@@ -134,11 +134,11 @@ if __name__ == "__main__":
             log['clip_model'].append("ViT-B/16")
     try:
         batch_size = 500
-for start in range(0, len(log['img_id']), batch_size):
-    end = start + batch_size
-    batch_log = {k: v[start:end] for k, v in log.items()}
-    df = pd.DataFrame.from_dict(batch_log)
-df.to_pickle(f"./results_batch_{start}.pkl")
-        print("Data saved successfully to './results.pkl'!")
+        for start in range(0, len(log['img_id']), batch_size):
+            end = start + batch_size
+            batch_log = {k: v[start:end] for k, v in log.items()}
+            df = pd.DataFrame.from_dict(batch_log)
+            df.to_pickle(f"./results_batch_{start}.pkl")
+        print("Data log saved in results.pkl sucessfully")
     except Exception as e:
         print(f"Error saving file: {e}")
