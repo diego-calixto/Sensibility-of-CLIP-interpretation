@@ -5,6 +5,8 @@ import os
 batch_dir = "./"
 batch_files = [f for f in os.listdir(batch_dir) if f.startswith('results_batch')]
 
+
+
 batch_files_sorted = sorted(batch_files, key=lambda x: int(x.split('_')[2].split('.')[0]))
 
 # Inicializar uma lista para armazenar os DataFrames
@@ -14,7 +16,6 @@ dfs = []
 for batch_file in batch_files_sorted:
     batch_df = pd.read_pickle(os.path.join(batch_dir, batch_file))
     dfs.append(batch_df)
-
 
 # Concatenar todos os DataFrames em um só
 final_df = pd.concat(dfs, ignore_index=True)
