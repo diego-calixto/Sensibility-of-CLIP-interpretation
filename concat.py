@@ -11,11 +11,13 @@ batch_files_sorted = sorted(batch_files, key=lambda x: int(x.split('_')[2].split
 
 # Inicializar uma lista para armazenar os DataFrames
 dfs = []
-
+i = 0
 # Ler e concatenar todos os arquivos de batches
 for batch_file in batch_files_sorted:
+    print(batch_file)
     batch_df = pd.read_pickle(os.path.join(batch_dir, batch_file))
     dfs.append(batch_df)
+    
 
 # Concatenar todos os DataFrames em um só
 final_df = pd.concat(dfs, ignore_index=True)
