@@ -9,7 +9,7 @@ This work aims to investigate the robustness of interpretability methods applied
 <img width=90% src="./images/examples.jpg"/>
 
 - heatmap comparison for input variations on different XAI methods on explaining image encoder with provided text prompts.
-<img width=90% src="./images/heatmap_analysis.png/>
+<img width=90% src="./images/heatmap_analysis.png"/>
 
 # How to run
 
