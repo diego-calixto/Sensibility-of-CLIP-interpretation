@@ -102,7 +102,7 @@ def generate_hm(hm_type, img, txt_embedding, txts, resize, img_keepsized):
 
 def visualize(hmap, raw_image, resize):
     image = np.asarray(raw_image.copy())
-    hmap = resize(hmap.unsqueeze(0))[0].to(device).numpy()
+    hmap = resize(hmap.unsqueeze(0))[0].cpu().numpy()
     color = cv2.applyColorMap((hmap*255).astype(np.uint8), cv2.COLORMAP_JET) # cv2 to plt
     color = cv2.cvtColor(color, cv2.COLOR_BGR2RGB)
     c_ret = np.clip(image * (1 - 0.5) + color * 0.5, 0, 255).astype(np.uint8)
@@ -161,6 +161,12 @@ def to_prompt(label):
 
     return f"a photo of a {labels_map[label]}"
 
+def denormalize_clip(tensor):
+    """Desnormaliza tensor do CLIP de volta para [0,1]"""
+    mean = torch.tensor([0.48145466, 0.4578275, 0.40821073], device=tensor.device).view(3, 1, 1)
+    std = torch.tensor([0.26862954, 0.26130258, 0.27577711], device=tensor.device).view(3, 1, 1)
+    return tensor * std + mean
+
 def analysis_pertub(img, label, int_method):
     img_processed = preprocess(img).to(device).unsqueeze(0)
     img_keepsize = imgprocess_keepsize(img).to(device).unsqueeze(0).to(torch.float32)
@@ -172,18 +178,13 @@ def analysis_pertub(img, label, int_method):
     hm_original = simple_hm(int_method, img_processed, label, resize, img_keepsize)
 
     img_processed_perturbed = perturb(img_processed.clone(), label)
-    
     img_perturbed_denorm = denormalize_clip(img_processed_perturbed.squeeze(0))
-    img_pil_perturbed = ToPILImage()(torch.clamp(img_perturbed_denorm, 0, 1))
+
+    img_pil_perturbed = ToPILImage()(torch.clamp(img_perturbed_denorm.cpu(), 0, 1))
+
     img_keepsize_perturbed = imgprocess_keepsize(img_pil_perturbed).to(device).unsqueeze(0).to(torch.float32)
 
     similarity_perturbed = simple_similarity(img_processed_perturbed, label)
     hm_perturbed = simple_hm(int_method, img_processed_perturbed, label, resize, img_keepsize_perturbed)
 
     return similarity_original, similarity_perturbed, hm_original, hm_perturbed
-
-def denormalize_clip(tensor):
-    """Desnormaliza tensor do CLIP de volta para [0,1]"""
-    mean = torch.tensor([0.48145466, 0.4578275, 0.40821073]).view(3, 1, 1)
-    std = torch.tensor([0.26862954, 0.26130258, 0.27577711]).view(3, 1, 1)
-    return tensor * std + mean

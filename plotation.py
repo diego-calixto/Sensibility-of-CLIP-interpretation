@@ -5,15 +5,13 @@ import numpy as np
 
 
 def getValues (metric):
-    log1 = pd.read_pickle("./metrics_results_simple.pkl")
-    log2 = pd.read_pickle("./metrics_results_simple_2.pkl")
-    log3 = pd.read_pickle("./metrics_results_simple_3.pkl")
-    log4 = pd.read_pickle("./metrics_results_simple_4.pkl")
 
-    log_list = [pd.read_pickle("./metrics_results_simple.pkl"), 
-                pd.read_pickle("./metrics_results_simple_2.pkl"), 
-                pd.read_pickle("./metrics_results_simple_3.pkl"), 
-                pd.read_pickle("./metrics_results_simple_4.pkl")]
+    log_list = [pd.read_pickle("../backup/results_full_4_255.pkl"), 
+                pd.read_pickle("../backup/results_full_8_255.pkl"), 
+                pd.read_pickle("../backup/results_full_16_255.pkl"), 
+                pd.read_pickle("../backup/results_full_32_255.pkl")]
+
+    print("pickles loaded")
     
     data = []
 
@@ -28,9 +26,21 @@ def getValues (metric):
     return [val["spearman_rank_correlation"].iloc[0] for val in data]
 
 # spearman_rank_correlation top_k_intersection  k_value      ssim  simimilarity_diff
-data_values = getValues('spearman_rank_correlation')
+# data_values = getValues('spearman_rank_correlation')
 
+# print("values collected")]
+["selfattn", "gradcam", "maskclip", "eclip", "game", "rollout", "surgery", "m2ib", "rise"]
+1.0
+1.0
+1.0
+1.0
+0.447763629524116
+0.4769023773673391
+0.631786395490853
+0.5970895118081463
+0.009760994611701195
 
+game =[0, 0.447763629524116, ]
 
 x = [4, 8, 16, 32]  # Valores do eixo x (norma L∞ de perturbação)
 # top_k = np.exp(-x)  # Exemplo de dados para a linha "Top-k attack"
@@ -58,4 +68,4 @@ plt.legend()
 
 # Exibindo o gráfico
 plt.grid(True)
-plt.show()
+plt.savefig("grafico_spearman.png", dpi=300, bbox_inches='tight')

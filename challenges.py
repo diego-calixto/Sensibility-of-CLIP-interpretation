@@ -104,7 +104,7 @@ if __name__ == "__main__":
 
 
     # int_method = ["selfattn", "gradcam", "maskclip", "eclip", "game", "rollout", "surgery", "m2ib", "rise"]
-    int_method_list =  ["selfattn", "gradcam", "maskclip", "eclip", "game", "rollout", "surgery", "m2ib", "rise"]
+    int_method_list =  ["selfattn", "gradcam", "maskclip", "eclip"]
 
     log = {
         'img_id': [],
@@ -130,7 +130,7 @@ if __name__ == "__main__":
             log['similarity_perturb'].append(similarity_perturbed)
             log['hm_original'].append(hm_original.detach().cpu().numpy())
             log['hm_perturbed'].append(hm_perturbed.detach().cpu().numpy())
-            log['alpha'].append(8/255)
+            log['alpha'].append(32/255)
             log['clip_model'].append("ViT-B/16")
     try:
         batch_size = 500

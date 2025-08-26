@@ -50,7 +50,7 @@ else :
 # file = "results_simple.pkl"
 
 # log = pd.read_pickle("\home\dhvc\projetos\backup\" + file)
-log = pd.read_pickle("./" + file)
+log = pd.read_pickle(file)
 
 k = 100  # Definir o valor de k para o cálculo do Top-K Intersection
 spearman_results = []
@@ -93,6 +93,6 @@ print(log.head())
 
 print("saving log on pickle")
 try:
-    log.to_pickle("./metrics_" + file)
+    log.to_pickle(file)
 except Exception as e:
     print(f"Error saving file: {e}")
