@@ -6,6 +6,7 @@ from PIL import Image
 import torch
 from torch.utils.data import Dataset
 import utils
+from concat import concat_batches
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
             
 
@@ -117,12 +118,16 @@ if __name__ == "__main__":
         'alpha': [],
         'clip_model': []
     }
+
+    # Norm of perturbation
+    epsilon = 8/255
+
     for idx in range(len(data)):
         image, label = data[idx]
         print("photo index: ", idx)
         for int_method in int_method_list:
             print(int_method)
-            similarity_original, similarity_perturbed, hm_original, hm_perturbed = utils.analysis_pertub(image, utils.to_prompt(label), int_method)
+            similarity_original, similarity_perturbed, hm_original, hm_perturbed = utils.analysis_pertub(image, utils.to_prompt(label), int_method, epsilon)
             log['img_id'].append(idx)
             log['interpretability_method'].append(int_method)
             log['label'].append(label)
@@ -130,7 +135,7 @@ if __name__ == "__main__":
             log['similarity_perturb'].append(similarity_perturbed)
             log['hm_original'].append(hm_original.detach().cpu().numpy())
             log['hm_perturbed'].append(hm_perturbed.detach().cpu().numpy())
-            log['alpha'].append(32/255)
+            log['alpha'].append(epsilon)
             log['clip_model'].append("ViT-B/16")
     try:
         batch_size = 500
@@ -140,5 +145,9 @@ if __name__ == "__main__":
             df = pd.DataFrame.from_dict(batch_log)
             df.to_pickle(f"./results_batch_{start}.pkl")
         print("Data log saved in results.pkl sucessfully")
+
+        # the following line wasn't tested. If it is presenting erros, please delete and run it individually.
+        concat_batches()
     except Exception as e:
         print(f"Error saving file: {e}")
+

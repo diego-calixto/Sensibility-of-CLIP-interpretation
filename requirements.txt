@@ -1,13 +1,7 @@
 Package                  Version
 ------------------------ -------
-anaconda-anon-usage      0.7.1
 Bottleneck               1.4.2
 Brotli                   1.0.9
-clip                     1.0
-conda-anaconda-telemetry 0.1.2
-conda-anaconda-tos       0.2.0
-conda-content-trust      0.2.0
-conda-libmamba-solver    25.4.0
 datasets                 3.3.2
 fqdn                     1.5.1
 gdown                    5.2.0

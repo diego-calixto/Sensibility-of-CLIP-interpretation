@@ -167,7 +167,7 @@ def denormalize_clip(tensor):
     std = torch.tensor([0.26862954, 0.26130258, 0.27577711], device=tensor.device).view(3, 1, 1)
     return tensor * std + mean
 
-def analysis_pertub(img, label, int_method):
+def analysis_pertub(img, label, int_method, epsilon):
     img_processed = preprocess(img).to(device).unsqueeze(0)
     img_keepsize = imgprocess_keepsize(img).to(device).unsqueeze(0).to(torch.float32)
 
@@ -177,7 +177,7 @@ def analysis_pertub(img, label, int_method):
     similarity_original = simple_similarity(img_processed, label)
     hm_original = simple_hm(int_method, img_processed, label, resize, img_keepsize)
 
-    img_processed_perturbed = perturb(img_processed.clone(), label)
+    img_processed_perturbed = perturb(img_processed.clone(), label, epsilon)
     img_perturbed_denorm = denormalize_clip(img_processed_perturbed.squeeze(0))
 
     img_pil_perturbed = ToPILImage()(torch.clamp(img_perturbed_denorm.cpu(), 0, 1))

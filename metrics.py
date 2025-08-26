@@ -42,6 +42,7 @@ def similarity_diff (sim_original, sim_perturbed):
     return (sim_perturbed - sim_original) / sim_original
 
 
+# if reading the results file from terminal is not working, please comment this if and else statement and pass the file path in the commented varible (file) bellow.
 if len(sys.argv) > 1:
     file = sys.argv[1]
 else :
